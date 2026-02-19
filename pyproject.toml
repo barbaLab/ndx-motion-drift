@@ -33,6 +33,8 @@ keywords = [
 dependencies = [
     "pynwb>=3.0.0",  # 3.0.0 compatible with hdmf 4.0+ and numpy 2.0
     "hdmf>=4.0.0",  # 4.0.0 required for numpy 2.0 compatibility
+    "spikeinterface>=0.103.0",
+    "numpy",
 ]
 
 [dependency-groups]
@@ -64,13 +66,12 @@ dev = [
     {include-group = "test"},
 ]
 
-# TODO: add URLs before release
 # [project.urls]
-# "Homepage" = "https://github.com/organization/package"
-# "Documentation" = "https://package.readthedocs.io/"
-# "Bug Tracker" = "https://github.com/organization/package/issues"
-# "Discussions" = "https://github.com/organization/package/discussions"
-# "Changelog" = "https://github.com/organization/package/blob/main/CHANGELOG.md"
+# "Homepage" = "https://github.com/barbaLab/ndx-motion-drift"
+# "Documentation" = "https://ndx-motion-drift.readthedocs.io/"
+# "Bug Tracker" = "https://github.com/barbaLab/ndx-motion-drift/issues"
+# "Discussions" = "https://github.com/barbaLab/ndx-motion-drift/discussions"
+# "Changelog" = "https://github.com/barbaLab/ndx-motion-drift/blob/main/CHANGELOG.md"
 
 # Include only the source code under `src/pynwb/ndx_motion_drift` and the spec files under `spec`
 # in the wheel.

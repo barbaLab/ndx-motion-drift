@@ -3,8 +3,7 @@ from pathlib import Path
 
 from pynwb.spec import NWBNamespaceBuilder, export_spec, NWBGroupSpec, NWBAttributeSpec
 
-# TODO: import other spec classes as needed
-# from pynwb.spec import NWBDatasetSpec, NWBLinkSpec, NWBDtypeSpec, NWBRefSpec
+from pynwb.spec import NWBDatasetSpec, NWBLinkSpec
 
 
 def main():
@@ -21,23 +20,72 @@ def main():
         ],
     )
     ns_builder.include_namespace("core")
-    
-    # TODO: if your extension builds on another extension, include the namespace
-    # of the other extension below
-    # ns_builder.include_namespace("ndx-other-extension")
 
-    # TODO: define your new data types
-    # see https://pynwb.readthedocs.io/en/stable/tutorials/general/extensions.html
-    # for more information
-    tetrode_series = NWBGroupSpec(
-        neurodata_type_def="TetrodeSeries",
-        neurodata_type_inc="ElectricalSeries",
-        doc="An extension of ElectricalSeries to include the tetrode ID for each time series.",
-        attributes=[NWBAttributeSpec(name="trode_id", doc="The tetrode ID.", dtype="int32")],
+    displacement_series = NWBGroupSpec(
+        neurodata_type_def="DisplacementSeries",
+        neurodata_type_inc="TimeSeries",
+        doc="An extension of TimeSeries to include motion drift displacements along time at multiple depths.",
+        attributes=[
+            NWBAttributeSpec(
+                name="direction",
+                doc="The displacement direction (e.g., 'y').",
+                dtype="text"
+            ),
+            NWBAttributeSpec(
+                name="unit",
+                doc="The unit of the displacements.",
+                dtype="text",
+            ),
+        ],
+        datasets=[
+            NWBDatasetSpec(
+                name="data",
+                doc="The displacements along the specified direction (in micrometers).",
+                dims=("num_temporal_bins", "num_spatial_bins"),
+                shape=(None, None),
+            ),
+            NWBDatasetSpec(
+                name="timestamps",
+                doc="The timestamps at which the displacements are measured (in seconds).",
+                dims=("num_temporal_bins",),
+                shape=(None,),
+                value="seconds",
+            ),
+            NWBDatasetSpec(
+                name="coordinates",
+                doc="The coordinates along the specified direction at which the displacements are measured (in micrometers).",
+                dims=("num_spatial_bins",),
+                shape=(None,),
+            ),
+            NWBDatasetSpec(
+                name="electrodes",
+                neurodata_type_inc="DynamicTableRegion",
+                doc="DynamicTableRegion pointer to the electrodes that this time series was generated from.",
+            )
+        ],
+        links=[
+            NWBLinkSpec(
+                name="source_electricalseries",
+                doc="Link to the ElectricalSeries that is the source of the motion drift estimation.",
+                target_type="ElectricalSeries",
+            ),
+        ],
     )
 
-    # TODO: add all of your new data types to this list
-    new_data_types = [tetrode_series]
+    drift_correction = NWBGroupSpec(
+        neurodata_type_def="DriftCorrection",
+        neurodata_type_inc="NWBDataInterface",
+        doc="Displacement data from one or more channels. This can be used to store the output of motion drift estimation and correction algorithms.",
+        groups=[
+            NWBGroupSpec(
+                neurodata_type_inc="DisplacementSeries",
+                doc="DisplacementSeries object(s) containing the motion drift estimation results.",
+                quantity="+",
+            ),
+        ]
+    )
+
+    new_data_types = [displacement_series, drift_correction]
 
     # export the spec to yaml files in the root spec folder
     output_dir = str((Path(__file__).parent.parent.parent / "spec").absolute())

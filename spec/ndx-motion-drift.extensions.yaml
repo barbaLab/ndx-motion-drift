@@ -1,9 +1,53 @@
 groups:
-- neurodata_type_def: TetrodeSeries
-  neurodata_type_inc: ElectricalSeries
-  doc: An extension of ElectricalSeries to include the tetrode ID for each time 
-    series.
+- neurodata_type_def: DisplacementSeries
+  neurodata_type_inc: TimeSeries
+  doc: An extension of TimeSeries to include motion drift displacements along 
+    time at multiple depths.
   attributes:
-  - name: trode_id
-    dtype: int32
-    doc: The tetrode ID.
+  - name: direction
+    dtype: text
+    doc: The displacement direction (e.g., 'y').
+  - name: unit
+    dtype: text
+    doc: The unit of the displacements.
+  datasets:
+  - name: data
+    dims:
+    - num_temporal_bins
+    - num_spatial_bins
+    shape:
+    - null
+    - null
+    doc: The displacements along the specified direction (in micrometers).
+  - name: timestamps
+    dims:
+    - num_temporal_bins
+    shape:
+    - null
+    value: seconds
+    doc: The timestamps at which the displacements are measured (in seconds).
+  - name: coordinates
+    dims:
+    - num_spatial_bins
+    shape:
+    - null
+    doc: The coordinates along the specified direction at which the 
+      displacements are measured (in micrometers).
+  - name: electrodes
+    neurodata_type_inc: DynamicTableRegion
+    doc: DynamicTableRegion pointer to the electrodes that this time series was 
+      generated from.
+  links:
+  - name: source_electricalseries
+    target_type: ElectricalSeries
+    doc: Link to the ElectricalSeries that is the source of the motion drift 
+      estimation.
+- neurodata_type_def: DriftCorrection
+  neurodata_type_inc: NWBDataInterface
+  doc: Displacement data from one or more channels. This can be used to store 
+    the output of motion drift estimation and correction algorithms.
+  groups:
+  - neurodata_type_inc: DisplacementSeries
+    doc: DisplacementSeries object(s) containing the motion drift estimation 
+      results.
+    quantity: +
