@@ -1,0 +1,12 @@
+namespaces:
+- author:
+  - Francesco Negri
+  contact:
+  - francesco.negri@edu.unige.it
+  doc: This extension provides neurodata types for motion drift estimation in 
+    ecephys.
+  name: ndx-motion-drift
+  schema:
+  - namespace: core
+  - source: ndx-motion-drift.extensions.yaml
+  version: 0.1.0
