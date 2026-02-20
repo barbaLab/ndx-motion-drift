@@ -1,23 +1,29 @@
 import json
 import numpy as np
 from spikeinterface.core import BaseRecording, Motion
-from pynwb import get_class
+from spikeinterface.extractors.nwbextractors import _retrieve_electrical_series_pynwb
+from pynwb import get_class, NWBFile
+from pynwb.ecephys import ElectricalSeries
 
 
-def from_spikeinterface(recording: BaseRecording, motion: Motion, **kwargs):
-    assert isinstance(recording, BaseRecording), f"The input must be a SpikeInterface BaseRecording object, not {type(recording)}."
-
-    recording_tree = [recording]
-    while recording_tree[-1].get_parent() is not None:
-        recording_tree.append(recording_tree[-1].get_parent())
-    has_electrical_series = [hasattr(r, "electrical_series") for r in recording_tree]
-    assert any(has_electrical_series), "The recording must have an ElectricalSeries to link the DisplacementSeries to."
-
+def from_spikeinterface(
+        motion: Motion, nwbfile: NWBFile,
+        source_electrical_series: ElectricalSeries | str, electrodes,
+        **kwargs
+    ):
     assert isinstance(motion, Motion), f"The input must be a SpikeInterface Motion object, not {type(motion)}."
+    assert isinstance(nwbfile, NWBFile), f"The input must be a PyNWB NWBFile object, not {type(nwbfile)}."
+    assert isinstance(source_electrical_series, (ElectricalSeries, str)), f"The source_electrical_series must be either a PyNWB ElectricalSeries object or the path of an ElectricalSeries in the NWBFile, not {type(source_electrical_series)}."
 
-    recording_nwb = recording_tree[has_electrical_series.index(True)]
-    nwbfile = recording_nwb._nwbfile
-    
+    if isinstance(source_electrical_series, str):
+        source_electrical_series = _retrieve_electrical_series_pynwb(nwbfile, source_electrical_series)
+
+    if isinstance(electrodes, (list, np.ndarray)):
+        electrodes = nwbfile.create_electrode_table_region(
+            description="Electrodes for which the motion drift was estimated.",
+            region=np.where(np.isin(nwbfile.electrodes["channel_name"].data[:], electrodes))[0].tolist()
+        )
+
     DisplacementSeries = get_class("DisplacementSeries", "ndx-motion-drift")
 
     displacement_series = DisplacementSeries(
@@ -32,11 +38,8 @@ def from_spikeinterface(recording: BaseRecording, motion: Motion, **kwargs):
         conversion=kwargs.get("conversion", 1.0),
         offset=kwargs.get("offset", 0.0),
         resolution=kwargs.get("resolution", -1.0),
-        source_electricalseries=recording_nwb.electrical_series,
-        electrodes=nwbfile.create_electrode_table_region(
-            description="Electrodes for which the motion drift was estimated.",
-            region=np.where(np.isin(nwbfile.electrodes["channel_name"].data[:], recording.channel_ids))[0].tolist()
-        ),
+        source_electricalseries=source_electrical_series,
+        electrodes=electrodes,
     )
 
     return displacement_series

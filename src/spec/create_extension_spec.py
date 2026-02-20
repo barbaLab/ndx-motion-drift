@@ -72,9 +72,10 @@ def main():
         ],
     )
 
-    drift_correction = NWBGroupSpec(
-        neurodata_type_def="DriftCorrection",
+    motion_drift = NWBGroupSpec(
+        neurodata_type_def="MotionDrift",
         neurodata_type_inc="NWBDataInterface",
+        default_name="MotionDrift",
         doc="Displacement data from one or more channels. This can be used to store the output of motion drift estimation and correction algorithms.",
         groups=[
             NWBGroupSpec(
@@ -85,7 +86,7 @@ def main():
         ]
     )
 
-    new_data_types = [displacement_series, drift_correction]
+    new_data_types = [displacement_series, motion_drift]
 
     # export the spec to yaml files in the root spec folder
     output_dir = str((Path(__file__).parent.parent.parent / "spec").absolute())

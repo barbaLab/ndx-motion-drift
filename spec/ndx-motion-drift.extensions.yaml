@@ -42,8 +42,9 @@ groups:
     target_type: ElectricalSeries
     doc: Link to the ElectricalSeries that is the source of the motion drift 
       estimation.
-- neurodata_type_def: DriftCorrection
+- neurodata_type_def: MotionDrift
   neurodata_type_inc: NWBDataInterface
+  default_name: MotionDrift
   doc: Displacement data from one or more channels. This can be used to store 
     the output of motion drift estimation and correction algorithms.
   groups:
